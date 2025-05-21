@@ -3,7 +3,7 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useDispatch, useSelector, Provider } from 'react-redux';
-import { clearBase, saveProductList } from './base';
+import { clearBase } from './base';
 import { store } from './store';
 
 function CloseCall({ navigation }: { navigation: any }) {
@@ -35,29 +35,28 @@ function CloseCall({ navigation }: { navigation: any }) {
 
 function OrderHome({ navigation }: { navigation: any }) {
   const dispatch = useDispatch();
-  const productList = useSelector((state: any) => state.productList);
+  //const productList = useSelector((state: any) => state.productList);
   //const productList = store.getState().productList;
 
   const [productCount, setProductCount] = useState<any[]>([]);
 
-  console.log(productList);
+  //console.log(productList);
 
   useEffect(() => {
     console.log('Order Home mounted');
 
-    setProductCount([]);
     // One-time access of Redux state to get what we need
     // This creates a function scope that will be garbage collected
-    // const getProductCount = () => {
-    //   // Accessing state in a function that will be garbage collected
-    //   const state = store.getState();
-    //   const count = state.productList || [];
-    //   console.log(count);
-    //   setProductCount(count);
-    // };
+    const getProductCount = () => {
+      // Accessing state in a function that will be garbage collected
+      const state = store.getState();
+      const count = state.productList || [];
+      console.log(count);
+      setProductCount(count);
+    };
 
     // Call the function to get the data
-    //getProductCount();
+    getProductCount();
 
     // let productList = store.getState().productList;
     // console.log(productList);
@@ -83,7 +82,9 @@ function OrderHome({ navigation }: { navigation: any }) {
 }
 
 function RetailerActivity({ navigation }: { navigation: any }) {
-  const dispatch = useDispatch();
+  //const dispatch = useDispatch();
+
+  const [productList, setProdductList] = useState<any[]>([]);
 
   useEffect(() => {
     console.log('Activity mounted');
@@ -94,7 +95,7 @@ function RetailerActivity({ navigation }: { navigation: any }) {
   }, []);
 
   function onPressLoadData() {
-    const arrData: any[] = [];
+    let arrData: any[] = [];
     for (let index = 0; index < 2600; index++) {
       arrData.push({
         'productID': 1516 + index,
@@ -299,17 +300,20 @@ function RetailerActivity({ navigation }: { navigation: any }) {
         'totalTaxRate': 0,
       });
     }
-    dispatch(saveProductList(arrData));
+    //dispatch(saveProductList(arrData));
+    setProdductList(arrData);
   }
 
   function onPressCloseCall() {
-    dispatch(clearBase());
+    //dispatch(clearBase());
+    setProdductList([]);
     navigation.navigate('Home');
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{'Activity Screen'}</Text>
+      <Text style={styles.title}>{`${productList.length} data loaded`}</Text>
       <Button title="Take Order" onPress={() => navigation.navigate('Order')} />
       <Button title="Load Products" onPress={onPressLoadData} />
       <Button title="Close Call" onPress={onPressCloseCall} />
