@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useDispatch, useSelector, Provider } from 'react-redux';
 import { clearBase, saveProductList } from './base';
 import { store } from './store';
+import BottomSheet, { IBottomSheetReferenceProps } from './bottomsheet';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function CloseCall({ navigation }: { navigation: any }) {
   const dispatch = useDispatch();
-  const productList = useSelector((state: any) => state.productList);
+  //const productList = useSelector((state: any) => state.productList);
 
-  console.log(productList);
+  //console.log(productList);
 
   useEffect(() => {
     console.log('CloseCall mounted');
@@ -36,31 +39,13 @@ function CloseCall({ navigation }: { navigation: any }) {
 function OrderHome({ navigation }: { navigation: any }) {
   const dispatch = useDispatch();
   const productList = useSelector((state: any) => state.productList);
-  //const productList = store.getState().productList;
 
-  const [productCount, setProductCount] = useState<any[]>([]);
+  const bottomSheetRef = useRef<IBottomSheetReferenceProps>(null);
 
-  console.log(productList);
+  //console.log(productList);
 
   useEffect(() => {
     console.log('Order Home mounted');
-
-    setProductCount([]);
-    // One-time access of Redux state to get what we need
-    // This creates a function scope that will be garbage collected
-    // const getProductCount = () => {
-    //   // Accessing state in a function that will be garbage collected
-    //   const state = store.getState();
-    //   const count = state.productList || [];
-    //   console.log(count);
-    //   setProductCount(count);
-    // };
-
-    // Call the function to get the data
-    //getProductCount();
-
-    // let productList = store.getState().productList;
-    // console.log(productList);
 
     return () => {
       console.log('Order Home unmounted');
@@ -68,6 +53,11 @@ function OrderHome({ navigation }: { navigation: any }) {
   }, []);
 
   function onPressCloseCall() {
+    bottomSheetRef.current?.openBottomSheet();
+  }
+
+  function onPressFinalCloseCall() {
+    bottomSheetRef.current?.closeBottomSheet();
     dispatch(clearBase());
     navigation.navigate('Home');
   }
@@ -75,15 +65,30 @@ function OrderHome({ navigation }: { navigation: any }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{'Order Screen'}</Text>
-      <Text>{`${productCount.length} data loaded.`}</Text>
+      <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
       <Button title="Go to Close Call" onPress={() => navigation.navigate('CloseCall')} />
       <Button title="Close Call" onPress={onPressCloseCall} />
+      <View style={styles.scrollView}>
+        <ScrollView>
+          {(productList.map((item: any, index: number) => (
+            <Text key={index}>{item.productName}</Text>
+          )))}
+        </ScrollView>
+      </View>
+      <BottomSheet
+        ref={bottomSheetRef}
+        onPressBackDrop={() => bottomSheetRef.current?.closeBottomSheet()}>
+        <View style={styles.bottmSheetContainer}>
+          <Button title="Close Call" onPress={onPressFinalCloseCall} />
+        </View>
+      </BottomSheet>
     </View>
   );
 }
 
 function RetailerActivity({ navigation }: { navigation: any }) {
   const dispatch = useDispatch();
+  const productList = useSelector((state: any) => state.productList);
 
   useEffect(() => {
     console.log('Activity mounted');
@@ -310,6 +315,7 @@ function RetailerActivity({ navigation }: { navigation: any }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{'Activity Screen'}</Text>
+      <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
       <Button title="Take Order" onPress={() => navigation.navigate('Order')} />
       <Button title="Load Products" onPress={onPressLoadData} />
       <Button title="Close Call" onPress={onPressCloseCall} />
@@ -343,25 +349,46 @@ function App() {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Home">
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="Activity" component={RetailerActivity} />
-          <Stack.Screen name="Order" component={OrderHome} />
-          <Stack.Screen name="CloseCall" component={CloseCall} />
-        </Stack.Navigator>
+        <GestureHandlerRootView style={styles.gestureView}>
+          <BottomSheetModalProvider>
+            <Stack.Navigator initialRouteName="Home">
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="Activity" component={RetailerActivity} />
+              <Stack.Screen name="Order" component={OrderHome} />
+              <Stack.Screen name="CloseCall" component={CloseCall} />
+            </Stack.Navigator>
+          </BottomSheetModalProvider>
+        </GestureHandlerRootView>
       </NavigationContainer>
     </Provider>
   );
 }
 
 const styles = StyleSheet.create({
+  gestureView: {
+    flex: 1,
+    alignSelf: 'stretch',
+  },
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    marginBottom: 100,
+    marginBottom: 50,
+  },
+  counter: {
+    marginBottom: 50,
+  },
+  scrollView: {
+    height: 200,
+    marginTop: 50,
+  },
+  bottmSheetContainer: {
+    width: '100%',
+    height: 400,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

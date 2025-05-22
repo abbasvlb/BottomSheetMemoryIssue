@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useDispatch, useSelector, Provider } from 'react-redux';
 import { clearBase } from './base';
 import { store } from './store';
+import BottomSheet, { IBottomSheetReferenceProps } from './bottomsheet';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function CloseCall({ navigation }: { navigation: any }) {
   const dispatch = useDispatch();
@@ -86,6 +89,8 @@ function RetailerActivity({ navigation }: { navigation: any }) {
 
   const [productList, setProdductList] = useState<any[]>([]);
 
+  const bottomSheetRef = useRef<IBottomSheetReferenceProps>(null);
+
   useEffect(() => {
     console.log('Activity mounted');
 
@@ -93,6 +98,13 @@ function RetailerActivity({ navigation }: { navigation: any }) {
       console.log('Activity unmounted');
     };
   }, []);
+
+  function onPressFinalCloseCall() {
+    bottomSheetRef.current?.closeBottomSheet();
+    //dispatch(clearBase());
+    setProdductList([]);
+    navigation.navigate('Home');
+  }
 
   function onPressLoadData() {
     let arrData: any[] = [];
@@ -306,8 +318,9 @@ function RetailerActivity({ navigation }: { navigation: any }) {
 
   function onPressCloseCall() {
     //dispatch(clearBase());
-    setProdductList([]);
-    navigation.navigate('Home');
+    //setProdductList([]);
+    //navigation.navigate('Home');
+    bottomSheetRef.current?.openBottomSheet();
   }
 
   return (
@@ -317,6 +330,13 @@ function RetailerActivity({ navigation }: { navigation: any }) {
       <Button title="Take Order" onPress={() => navigation.navigate('Order')} />
       <Button title="Load Products" onPress={onPressLoadData} />
       <Button title="Close Call" onPress={onPressCloseCall} />
+      <BottomSheet
+        ref={bottomSheetRef}
+        onPressBackDrop={() => bottomSheetRef.current?.closeBottomSheet()}>
+        <View style={styles.bottmSheetContainer}>
+          <Button title="Close Call" onPress={onPressFinalCloseCall} />
+        </View>
+      </BottomSheet>
     </View>
   );
 }
@@ -347,18 +367,26 @@ function App() {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Home">
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="Activity" component={RetailerActivity} />
-          <Stack.Screen name="Order" component={OrderHome} />
-          <Stack.Screen name="CloseCall" component={CloseCall} />
-        </Stack.Navigator>
+        <GestureHandlerRootView style={styles.gestureView}>
+          <BottomSheetModalProvider>
+            <Stack.Navigator initialRouteName="Home">
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="Activity" component={RetailerActivity} />
+              <Stack.Screen name="Order" component={OrderHome} />
+              <Stack.Screen name="CloseCall" component={CloseCall} />
+            </Stack.Navigator>
+          </BottomSheetModalProvider>
+        </GestureHandlerRootView>
       </NavigationContainer>
     </Provider>
   );
 }
 
 const styles = StyleSheet.create({
+  gestureView: {
+    flex: 1,
+    alignSelf: 'stretch',
+  },
   container: {
     flex: 1,
     alignItems: 'center',
@@ -366,6 +394,12 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: 100,
+  },
+  bottmSheetContainer: {
+    width: '100%',
+    height: 400,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
