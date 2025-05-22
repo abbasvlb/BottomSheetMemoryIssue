@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -9,32 +9,6 @@ import BottomSheet, { IBottomSheetReferenceProps } from './bottomsheet';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-function CloseCall({ navigation }: { navigation: any }) {
-  const dispatch = useDispatch();
-  //const productList = useSelector((state: any) => state.productList);
-
-  //console.log(productList);
-
-  useEffect(() => {
-    console.log('CloseCall mounted');
-
-    return () => {
-      console.log('CloseCall unmounted');
-    };
-  }, []);
-
-  function onPressCloseCall() {
-    dispatch(clearBase());
-    navigation.navigate('Home');
-  }
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{'Order Screen'}</Text>
-      <Button title="Close Call" onPress={onPressCloseCall} />
-    </View>
-  );
-}
 
 function OrderHome({ navigation }: { navigation: any }) {
   const dispatch = useDispatch();
@@ -42,23 +16,21 @@ function OrderHome({ navigation }: { navigation: any }) {
 
   const bottomSheetRef = useRef<IBottomSheetReferenceProps>(null);
 
-  //console.log(productList);
-
-  useEffect(() => {
-    console.log('Order Home mounted');
-
-    return () => {
-      console.log('Order Home unmounted');
-    };
-  }, []);
-
   function onPressCloseCall() {
-    bottomSheetRef.current?.openBottomSheet();
+    // Open the bottom sheet using the ref
+    bottomSheetRef.current?.openBottomSheet?.();
+  }
+
+  function onPressCloseCallDirect() {
+    dispatch(clearBase());
+    navigation.navigate('Home');
   }
 
   function onPressFinalCloseCall() {
-    bottomSheetRef.current?.closeBottomSheet();
+    bottomSheetRef.current?.closeBottomSheet?.();
+    
     dispatch(clearBase());
+    
     navigation.navigate('Home');
   }
 
@@ -66,18 +38,20 @@ function OrderHome({ navigation }: { navigation: any }) {
     <View style={styles.container}>
       <Text style={styles.title}>{'Order Screen'}</Text>
       <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
-      <Button title="Go to Close Call" onPress={() => navigation.navigate('CloseCall')} />
-      <Button title="Close Call" onPress={onPressCloseCall} />
+      <Button title="Direct Close Call" onPress={onPressCloseCallDirect} />
+      <View style={{ height: 100 }} />
+      <Button title="Close Call with Bottom Sheet" onPress={onPressCloseCall} />
       <View style={styles.scrollView}>
         <ScrollView>
-          {(productList.map((item: any, index: number) => (
+          {productList.map((item: any, index: number) => (
             <Text key={index}>{item.productName}</Text>
-          )))}
+          ))}
         </ScrollView>
       </View>
+      {/* Always render the BottomSheet */}
       <BottomSheet
         ref={bottomSheetRef}
-        onPressBackDrop={() => bottomSheetRef.current?.closeBottomSheet()}>
+        onPressBackDrop={() => bottomSheetRef.current?.closeBottomSheet?.()}>
         <View style={styles.bottmSheetContainer}>
           <Button title="Close Call" onPress={onPressFinalCloseCall} />
         </View>
@@ -305,20 +279,14 @@ function RetailerActivity({ navigation }: { navigation: any }) {
       });
     }
     dispatch(saveProductList(arrData));
-  }
-
-  function onPressCloseCall() {
-    dispatch(clearBase());
-    navigation.navigate('Home');
+    navigation.navigate('Order')
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{'Activity Screen'}</Text>
+      <Text style={styles.title}>{'Retailer Activity Screen'}</Text>
       <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
-      <Button title="Take Order" onPress={() => navigation.navigate('Order')} />
-      <Button title="Load Products" onPress={onPressLoadData} />
-      <Button title="Close Call" onPress={onPressCloseCall} />
+      <Button title="Load Products and Goto Order" onPress={onPressLoadData} />
     </View>
   );
 }
@@ -332,11 +300,12 @@ function HomeScreen({ navigation }: { navigation: any }) {
     };
   }, []);
 
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{'Home Screen'}</Text>
       <Button
-        title="Start Visit"
+        title="HomeScreen"
         onPress={() => navigation.navigate('Activity')}
       />
     </View>
@@ -355,7 +324,6 @@ function App() {
               <Stack.Screen name="Home" component={HomeScreen} />
               <Stack.Screen name="Activity" component={RetailerActivity} />
               <Stack.Screen name="Order" component={OrderHome} />
-              <Stack.Screen name="CloseCall" component={CloseCall} />
             </Stack.Navigator>
           </BottomSheetModalProvider>
         </GestureHandlerRootView>
