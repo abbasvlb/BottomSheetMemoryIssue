@@ -1,25 +1,40 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useDispatch, useSelector, Provider } from 'react-redux';
 import { clearBase, saveProductList } from './base';
 import { store } from './store';
-import BottomSheet, { IBottomSheetReferenceProps } from './bottomsheet';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetModalProvider,
+} from '@gorhom/bottom-sheet';
 
 
 function OrderHome({ navigation }: { navigation: any }) {
   const dispatch = useDispatch();
   const productList = useSelector((state: any) => state.productList);
 
-  const bottomSheetRef = useRef<IBottomSheetReferenceProps>(null);
+  useEffect(() => {
+    console.log('Order Home Component mounted');
 
-  function onPressCloseCall() {
-    // Open the bottom sheet using the ref
-    bottomSheetRef.current?.openBottomSheet?.();
-  }
+    return () => {
+      console.log('Order Home Component unmounted');
+    };
+  }, []);
+
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  // callbacks
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log('handleSheetChanges', index);
+  }, []);
+
+  const openBottomSheet = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
 
   function onPressCloseCallDirect() {
     dispatch(clearBase());
@@ -27,35 +42,42 @@ function OrderHome({ navigation }: { navigation: any }) {
   }
 
   function onPressFinalCloseCall() {
-    bottomSheetRef.current?.closeBottomSheet?.();
-    
-    dispatch(clearBase());
-    
-    navigation.navigate('Home');
+    bottomSheetModalRef.current?.close();
+    //add a small time delay to make sure the bottom sheet is closed
+    setTimeout(() => {
+      dispatch(clearBase());
+      navigation.navigate('Home');
+    }, 2000);
+
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{'Order Screen'}</Text>
-      <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
-      <Button title="Direct Close Call" onPress={onPressCloseCallDirect} />
-      <View style={{ height: 100 }} />
-      <Button title="Close Call with Bottom Sheet" onPress={onPressCloseCall} />
-      <View style={styles.scrollView}>
-        <ScrollView>
-          {productList.map((item: any, index: number) => (
-            <Text key={index}>{item.productName}</Text>
-          ))}
-        </ScrollView>
-      </View>
-      {/* Always render the BottomSheet */}
-      <BottomSheet
-        ref={bottomSheetRef}
-        onPressBackDrop={() => bottomSheetRef.current?.closeBottomSheet?.()}>
-        <View style={styles.bottmSheetContainer}>
-          <Button title="Close Call" onPress={onPressFinalCloseCall} />
+      <BottomSheetModalProvider>
+        <Text style={styles.title}>{'Order Screen'}</Text>
+        <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
+        <Button title="Direct Close Call" onPress={onPressCloseCallDirect} />
+        <View style={{ height: 100 }} />
+        <Button title="Close Call with Bottom Sheet" onPress={openBottomSheet} />
+        <View style={styles.scrollView}>
+          <ScrollView>
+            {productList.map((item: any, index: number) => (
+              <Text key={index}>{item.productName}</Text>
+            ))}
+          </ScrollView>
         </View>
-      </BottomSheet>
+
+
+        <BottomSheetModal
+          ref={bottomSheetModalRef}
+          onChange={handleSheetChanges}
+        >
+          <BottomSheetView style={styles.bottmSheetContainer}>
+            <Button title="Close Call" onPress={onPressFinalCloseCall} />
+          </BottomSheetView>
+        </BottomSheetModal>
+
+      </BottomSheetModalProvider>
     </View>
   );
 }
@@ -65,10 +87,10 @@ function RetailerActivity({ navigation }: { navigation: any }) {
   const productList = useSelector((state: any) => state.productList);
 
   useEffect(() => {
-    console.log('Activity mounted');
+    console.log('Retailer load Component mounted');
 
     return () => {
-      console.log('Activity unmounted');
+      console.log('Retailer load Component unmounted');
     };
   }, []);
 
@@ -315,17 +337,21 @@ function HomeScreen({ navigation }: { navigation: any }) {
 const Stack = createNativeStackNavigator();
 
 function App() {
+
+
+
+
   return (
     <Provider store={store}>
       <NavigationContainer>
         <GestureHandlerRootView style={styles.gestureView}>
-          <BottomSheetModalProvider>
-            <Stack.Navigator initialRouteName="Home">
-              <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen name="Activity" component={RetailerActivity} />
-              <Stack.Screen name="Order" component={OrderHome} />
-            </Stack.Navigator>
-          </BottomSheetModalProvider>
+
+          <Stack.Navigator initialRouteName="Home">
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Activity" component={RetailerActivity} />
+            <Stack.Screen name="Order" component={OrderHome} />
+          </Stack.Navigator>
+
         </GestureHandlerRootView>
       </NavigationContainer>
     </Provider>
