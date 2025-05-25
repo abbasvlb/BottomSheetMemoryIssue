@@ -14,6 +14,11 @@ import {
 } from '@gorhom/bottom-sheet';
 
 
+/**
+ * This is a dummy order taking screen. Closing this component without opening bottom sheet releasing all the memory.
+ * @param param0 
+ * @returns 
+ */
 function OrderHome({ navigation }: { navigation: any }) {
   const dispatch = useDispatch();
   const productList = useSelector((state: any) => state.productList);
@@ -53,6 +58,7 @@ function OrderHome({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.container}>
+      <GestureHandlerRootView style={styles.gestureView}>
       <BottomSheetModalProvider>
         <Text style={styles.title}>{'Order Screen'}</Text>
         <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
@@ -78,19 +84,24 @@ function OrderHome({ navigation }: { navigation: any }) {
         </BottomSheetModal>
 
       </BottomSheetModalProvider>
+      </GestureHandlerRootView>
     </View>
   );
 }
 
+/**
+ * 
+ * @param param0 This component will load the products into redux and navigate to order taking screen.
+ * @returns 
+ */
 function RetailerActivity({ navigation }: { navigation: any }) {
   const dispatch = useDispatch();
   const productList = useSelector((state: any) => state.productList);
 
   useEffect(() => {
-    console.log('Retailer load Component mounted');
-
+    console.log('Retailer List Component mounted');
     return () => {
-      console.log('Retailer load Component unmounted');
+      console.log('Retailer List Component unmounted');
     };
   }, []);
 
@@ -306,13 +317,15 @@ function RetailerActivity({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{'Retailer Activity Screen'}</Text>
       <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
       <Button title="Load Products and Goto Order" onPress={onPressLoadData} />
     </View>
   );
 }
 
+/**
+ * Landing Page, just to ensure memory is cleared.
+ */
 function HomeScreen({ navigation }: { navigation: any }) {
   useEffect(() => {
     console.log('Home mounted');
@@ -325,10 +338,9 @@ function HomeScreen({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{'Home Screen'}</Text>
       <Button
-        title="HomeScreen"
-        onPress={() => navigation.navigate('Activity')}
+        title="Goto to Retailer List"
+        onPress={() => navigation.navigate('RetailerListing')}
       />
     </View>
   );
@@ -337,21 +349,15 @@ function HomeScreen({ navigation }: { navigation: any }) {
 const Stack = createNativeStackNavigator();
 
 function App() {
-
-
-
-
   return (
     <Provider store={store}>
       <NavigationContainer>
         <GestureHandlerRootView style={styles.gestureView}>
-
           <Stack.Navigator initialRouteName="Home">
             <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Activity" component={RetailerActivity} />
+            <Stack.Screen name="RetailerListing" component={RetailerActivity} />
             <Stack.Screen name="Order" component={OrderHome} />
           </Stack.Navigator>
-
         </GestureHandlerRootView>
       </NavigationContainer>
     </Provider>
