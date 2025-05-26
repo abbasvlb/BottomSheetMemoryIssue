@@ -20,93 +20,19 @@ import {
  * @returns 
  */
 function OrderHome({ navigation }: { navigation: any }) {
+  
   const dispatch = useDispatch();
   const productList = useSelector((state: any) => state.productList);
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   useEffect(() => {
     console.log('Order Home Component mounted');
-
     return () => {
       console.log('Order Home Component unmounted');
     };
   }, []);
 
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-  // callbacks
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
-  }, []);
-
-  const openBottomSheet = useCallback(() => {
-    bottomSheetModalRef.current?.present();
-  }, []);
-
-  function onPressCloseCallDirect() {
-    dispatch(clearBase());
-    navigation.navigate('Home');
-  }
-
-  function onPressFinalCloseCall() {
-    bottomSheetModalRef.current?.close();
-    //add a small time delay to make sure the bottom sheet is closed
-    setTimeout(() => {
-      dispatch(clearBase());
-      navigation.navigate('Home');
-    }, 2000);
-
-  }
-
-  return (
-    <View style={styles.container}>
-      <GestureHandlerRootView style={styles.gestureView}>
-        <BottomSheetModalProvider>
-          <View style={{ padding: 10 }}>
-            <View style={{ height: 50 }} />
-            <Button title="Direct Close Call" onPress={onPressCloseCallDirect} />
-            <View style={{ height: 50 }} />
-            <Button title="Close Call with Bottom Sheet" onPress={openBottomSheet} />
-            <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
-            <View style={styles.scrollView}>
-              <ScrollView>
-                {productList.map((item: any, index: number) => (
-                  <Text key={index}>{item.productName}</Text>
-                ))}
-              </ScrollView>
-            </View>
-          </View>
-
-          <BottomSheetModal
-            ref={bottomSheetModalRef}
-            onChange={handleSheetChanges}
-          >
-            <BottomSheetView style={styles.bottmSheetContainer}>
-              <Button title="Close Call" onPress={onPressFinalCloseCall} />
-            </BottomSheetView>
-          </BottomSheetModal>
-
-        </BottomSheetModalProvider>
-      </GestureHandlerRootView>
-    </View>
-  );
-}
-
-/**
- * 
- * @param param0 This component will load the products into redux and navigate to order taking screen.
- * @returns 
- */
-function RetailerActivity({ navigation }: { navigation: any }) {
-  const dispatch = useDispatch();
-  const productList = useSelector((state: any) => state.productList);
-
-  useEffect(() => {
-    console.log('Retailer List Component mounted');
-    return () => {
-      console.log('Retailer List Component unmounted');
-    };
-  }, []);
-
-  function onPressLoadData() {
+   function onPressLoadData() {
     const arrData: any[] = [];
     for (let index = 0; index < 2600; index++) {
       arrData.push({
@@ -313,13 +239,57 @@ function RetailerActivity({ navigation }: { navigation: any }) {
       });
     }
     dispatch(saveProductList(arrData));
-    navigation.navigate('Order')
+  }
+
+  const openBottomSheet = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+
+  function onPressCloseCallDirect() {
+    dispatch(clearBase());
+    navigation.navigate('Home');
+  }
+
+  function onPressFinalCloseCall() {
+    bottomSheetModalRef.current?.close();
+     dispatch(clearBase());
+    //add a small time delay to make sure the bottom sheet is closed
+    setTimeout(() => {
+      navigation.navigate('Home');
+    }, 2000);
+
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
-      <Button title="Load Products and Goto Order" onPress={onPressLoadData} />
+      <GestureHandlerRootView style={styles.gestureView}>
+        <BottomSheetModalProvider>
+          <View style={{ padding: 10 }}>
+            <Button title="Load Products and Goto Order" onPress={onPressLoadData} />
+            <View style={{ height: 10 }} />
+            <Button title="Direct Close Call" onPress={onPressCloseCallDirect} />
+            <View style={{ height: 10 }} />
+            <Button title="Close Call with Bottom Sheet" onPress={openBottomSheet} />
+            <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
+            <View style={styles.scrollView}>
+              <ScrollView>
+                {productList.map((item: any, index: number) => (
+                  <Text key={index}>{item.productName}</Text>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+
+          <BottomSheetModal
+            ref={bottomSheetModalRef}
+          >
+            <BottomSheetView style={styles.bottmSheetContainer}>
+              <Button title="Close Call" onPress={onPressFinalCloseCall} />
+            </BottomSheetView>
+          </BottomSheetModal>
+
+        </BottomSheetModalProvider>
+      </GestureHandlerRootView>
     </View>
   );
 }
@@ -328,20 +298,11 @@ function RetailerActivity({ navigation }: { navigation: any }) {
  * Landing Page, just to ensure memory is cleared.
  */
 function HomeScreen({ navigation }: { navigation: any }) {
-  useEffect(() => {
-    console.log('Home mounted');
-
-    return () => {
-      console.log('Home unmounted');
-    };
-  }, []);
-
-
   return (
     <View style={styles.container}>
       <Button
-        title="Goto to Retailer List"
-        onPress={() => navigation.navigate('RetailerListing')}
+        title="Goto to Order Screen"
+        onPress={() => navigation.navigate('Order')}
       />
     </View>
   );
@@ -356,7 +317,6 @@ function App() {
         <GestureHandlerRootView style={styles.gestureView}>
           <Stack.Navigator initialRouteName="Home">
             <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="RetailerListing" component={RetailerActivity} />
             <Stack.Screen name="Order" component={OrderHome} />
           </Stack.Navigator>
         </GestureHandlerRootView>
