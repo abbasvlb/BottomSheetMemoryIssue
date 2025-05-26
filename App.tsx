@@ -59,31 +59,32 @@ function OrderHome({ navigation }: { navigation: any }) {
   return (
     <View style={styles.container}>
       <GestureHandlerRootView style={styles.gestureView}>
-      <BottomSheetModalProvider>
-        <Text style={styles.title}>{'Order Screen'}</Text>
-        <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
-        <Button title="Direct Close Call" onPress={onPressCloseCallDirect} />
-        <View style={{ height: 100 }} />
-        <Button title="Close Call with Bottom Sheet" onPress={openBottomSheet} />
-        <View style={styles.scrollView}>
-          <ScrollView>
-            {productList.map((item: any, index: number) => (
-              <Text key={index}>{item.productName}</Text>
-            ))}
-          </ScrollView>
-        </View>
+        <BottomSheetModalProvider>
+          <View style={{ padding: 10 }}>
+            <View style={{ height: 50 }} />
+            <Button title="Direct Close Call" onPress={onPressCloseCallDirect} />
+            <View style={{ height: 50 }} />
+            <Button title="Close Call with Bottom Sheet" onPress={openBottomSheet} />
+            <Text style={styles.counter}>{`${productList.length} data loaded.`}</Text>
+            <View style={styles.scrollView}>
+              <ScrollView>
+                {productList.map((item: any, index: number) => (
+                  <Text key={index}>{item.productName}</Text>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
 
+          <BottomSheetModal
+            ref={bottomSheetModalRef}
+            onChange={handleSheetChanges}
+          >
+            <BottomSheetView style={styles.bottmSheetContainer}>
+              <Button title="Close Call" onPress={onPressFinalCloseCall} />
+            </BottomSheetView>
+          </BottomSheetModal>
 
-        <BottomSheetModal
-          ref={bottomSheetModalRef}
-          onChange={handleSheetChanges}
-        >
-          <BottomSheetView style={styles.bottmSheetContainer}>
-            <Button title="Close Call" onPress={onPressFinalCloseCall} />
-          </BottomSheetView>
-        </BottomSheetModal>
-
-      </BottomSheetModalProvider>
+        </BottomSheetModalProvider>
       </GestureHandlerRootView>
     </View>
   );
@@ -381,8 +382,8 @@ const styles = StyleSheet.create({
     marginBottom: 50,
   },
   scrollView: {
-    height: 200,
-    marginTop: 50,
+    height: 400,
+    marginTop: 5,
   },
   bottmSheetContainer: {
     width: '100%',
